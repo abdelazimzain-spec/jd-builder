@@ -411,9 +411,9 @@ input.ok{border-color:var(--green)}input.err,select.err{border-color:#b81c1c;bac
         <label class="lbl">Reports to (title) <span class="req">*</span></label>
         <select id="reportsTo" onchange="checkRL()">
           <option value="">— Select —</option>
-          <optgroup label="Senior Positions"><option value="CEO|Senior Positions">CEO</option><option value="Sector CEO|Senior Positions">Sector CEO</option><option value="Managing Director|Senior Positions">Managing Director</option></optgroup>
-          <optgroup label="Senior Management"><option value="General Manager|Senior Management">General Manager</option><option value="Group Director|Senior Management">Group Director</option><option value="Sector Director|Senior Management">Sector Director</option><option value="Director|Senior Management">Director</option></optgroup>
-          <optgroup label="Management"><option value="Senior Manager|Management">Senior Manager</option><option value="Manager|Management">Manager</option></optgroup>
+          <optgroup label="Senior Positions"><option value="CEO|Senior Positions|L1">CEO</option><option value="Sector CEO|Senior Positions|L2">Sector CEO</option><option value="Managing Director|Senior Positions|L3">Managing Director</option></optgroup>
+          <optgroup label="Senior Management"><option value="General Manager|Senior Management|D1">General Manager</option><option value="Group Director|Senior Management|D1">Group Director</option><option value="Sector Director|Senior Management|D1">Sector Director</option><option value="Director A|Senior Management|D2">Director A</option><option value="Director B|Senior Management|D3">Director B</option></optgroup>
+          <optgroup label="Management"><option value="Senior Manager|Management|M1">Senior Manager</option><option value="Manager|Management|M2">Manager</option></optgroup>
           <optgroup label="Senior Professionals"><option value="Section Head|Senior Professionals">Section Head</option><option value="Team Leader|Senior Professionals">Team Leader</option></optgroup>
           <optgroup label="Professionals"><option value="Senior Engineer|Professionals">Senior Engineer</option><option value="Senior Specialist|Professionals">Senior Specialist</option><option value="Engineer|Professionals">Engineer</option><option value="Specialist|Professionals">Specialist</option></optgroup>
         </select>
@@ -3146,6 +3146,7 @@ function _detectRoleSlug(t){
   const a=t.toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
   if(/ceo/.test(a)||a.includes('chief executive')||a.includes('sector ceo')||a.includes('sta - ceo')||a.includes('sta-ceo')) return 'ceo';
   if(a.includes('managing director')||a.includes('managing drector')||a.includes('mananging director')) return 'ceo';
+  if(a.includes('sector director')||a.includes('group director')) return 'ceo';
   if((a.includes('general manager')||a.startsWith('gm '))&&!a.includes('regional')) return 'ceo';
   if(a.includes('chief financial')||a.includes(' cfo')||a.startsWith('cfo ')||a.includes('finance director')||a.includes('sector cfo')||a.includes('country cfo')) return 'cfo';
   if(a.includes('chief operating')||a.includes(' coo')||a.startsWith('coo ')||a.includes('operations director')||a.includes('operations general manager')) return 'ops';
@@ -3195,7 +3196,7 @@ function updateDetectionChip(){
   if(entry){label='\u2736 BU-specific senior JD matched';color='#1a7a3a';}
   else{
     var k=areaToKBKey(px||area||full);
-    if(k&&k!=='_default'&&typeof AREA_KB!=='undefined'&&AREA_KB[k]){label='\u26a1 Function library: '+k;color='#1a4a8a';}
+    if(k&&k!=='_default'&&typeof AREA_KB!=='undefined'&&AREA_KB[k]){label='\u26a1 '+(k==='top management'?'Top Management — BU-specific JD':'Function library: '+k);color='#1a4a8a';}
     else{label='\u25cb Generic template (fill prefix for better match)';color='#888';}
   }
   chip.innerHTML='<span style="font-size:11px;font-weight:600;padding:2px 10px;background:#f5f5f5;border-radius:4px;border:1px solid #ddd;color:'+color+'">'+label+'</span>';
@@ -3236,6 +3237,75 @@ const AREA_KB = {
   // ══════════════════════════════════════════════════════════════════
 
   // ── GENERAL MANAGER / MD / CEO (BU/Sector) ───────────────────────
+
+  // ══════════════════════════════════════════════════════════════════
+  //  TOP MANAGEMENT — General Manager / Managing Director / Sector CEO / CEO
+  //  Single AREA_KB entry that handles all top-level roles.
+  //  Scope (BU / Sector / Group) and band are used to generate the
+  //  right level of accountability and strategic weight.
+  //  BU_SENIOR_LIB entries supplement this for specific BUs.
+  // ══════════════════════════════════════════════════════════════════
+  'top management': {
+    purpose: {
+      'Senior Positions':   'To lead {COMPANY} as the single accountable executive in order to define and execute a winning business strategy, build a world-class leadership team, and deliver sustainable revenue growth, margin expansion, and shareholder value in {MARKET}.',
+      'Senior Management':  'To lead {COMPANY} as General Manager in order to translate the Group\'s strategic direction into a fully-executed operating plan — delivering revenue, EBITDA, and cash targets while building the commercial capability, operational excellence, and talent depth required for long-term competitiveness in {MARKET}.',
+      'Management':         'To direct all business operations of {COMPANY} in order to achieve the annual commercial, operational, and financial targets set by sector leadership — while developing the team and building the organisational capability that positions {COMPANY} for sustained growth.',
+    },
+    accs: {
+      'Senior Positions': [
+        'Define and govern the three-to-five year business strategy for {COMPANY}, identifying the highest-value growth opportunities in {MARKET}, setting the investment agenda for technology, capacity, and talent, and securing Group Board alignment on the strategic direction and financial ambition.',
+        'Hold single-point P&L accountability for {COMPANY}, governing revenue, gross margin, EBITDA, operating cash flow, and ROCE against Board-approved targets — presenting monthly performance to the Group CEO with zero tolerance for unexplained variance and clear recovery plans for any shortfall.',
+        'Build and lead a high-performing executive team, recruiting and retaining exceptional functional heads across commercial, operations, finance, engineering, and HR — holding each accountable through rigorous quarterly performance reviews, structured development plans, and differentiated compensation.',
+        'Govern the commercial and customer agenda of {COMPANY}, personally leading relationships with tier-1 strategic accounts, national authorities, and key government stakeholders in {MARKET} — and ensuring the company wins the most important tenders, framework agreements, and long-term supply contracts.',
+        'Direct the capital allocation agenda of {COMPANY}, building rigorous business cases for capacity expansion, technology investment, product development, and market entry — presenting to the Group Board within governance timelines and managing execution within approved budget and schedule.',
+        'Drive operational excellence across {COMPANY}, holding the COO and operations leadership accountable for OEE, delivery reliability, first-pass quality, and cost competitiveness — and personally sponsoring the lean transformation and continuous improvement programs that close the gap to world-class benchmarks.',
+        'Govern the financial health of {COMPANY} with the CFO, overseeing the quality of financial reporting, the rigour of the budgeting and forecasting cycle, working capital discipline, and the integrity of the internal control environment — and ensuring full compliance with Group financial policies and applicable law.',
+        'Champion the people agenda at {COMPANY}, governing the talent management and succession planning process for all critical roles, building a leadership development pipeline, and creating an inclusive, high-performance culture rooted in Elsewedy Electric\'s values.',
+        'Protect and grow {COMPANY}\'s licence to operate in {MARKET}, managing relationships with regulatory authorities, government ministries, host-country partners, and local communities — and ensuring the company\'s HSE, environmental, and corporate governance standards meet or exceed both Group and local legal requirements.',
+        'Lead {COMPANY}\'s external positioning in {MARKET}, representing Elsewedy Electric at industry forums, investor presentations, government advisory bodies, and strategic partnerships — building the brand equity and institutional relationships that generate long-term commercial pipeline.',
+      ],
+      'Senior Management': [
+        'Define and execute the annual operating plan for {COMPANY}, translating sector-level targets into functional KPIs, quarterly milestones, and resource allocation decisions — and intervening with urgency when performance deviates from plan.',
+        'Own the full P&L of {COMPANY}, holding personal accountability for revenue, gross margin, EBITDA, and cash generation against the Group-approved budget — presenting monthly variance analysis and recovery actions to the Sector CEO with full transparency.',
+        'Lead the commercial agenda of {COMPANY}, governing key account relationships, major tender strategies, and pricing decisions for all significant contracts in {MARKET} — personally attending final negotiations on deals that exceed the approval threshold.',
+        'Build and develop the management team of {COMPANY}, setting clear objectives for each functional manager, conducting rigorous quarterly performance reviews, identifying development needs, and building succession depth for all critical management positions.',
+        'Drive operational performance across all functions of {COMPANY} — commercial, operations, finance, engineering, supply chain, and HR — identifying cross-functional bottlenecks, arbitrating resource conflicts, and ensuring the organisation executes as a coordinated whole.',
+        'Govern the financial management of {COMPANY}, overseeing monthly close quality, working capital discipline, CAPEX execution within budget, and compliance with Group treasury, procurement, and delegation-of-authority policies.',
+        'Manage all government, regulatory, and stakeholder relationships in the operating geography, maintaining {COMPANY}\'s approved-vendor and operating licences, managing customs and trade compliance, and building the institutional relationships that enable market access and contract awards.',
+        'Champion HSE and quality culture at {COMPANY}, holding all managers personally accountable for zero-harm performance and ITP compliance, responding visibly to incidents, and ensuring ISO 9001, 14001, and 45001 certifications are maintained without condition.',
+        'Build and execute {COMPANY}\'s talent and capability plan, working with HR to recruit critical roles, develop high-potential individuals, and build a workforce that has the skills to deliver the three-year growth agenda.',
+        'Report Group performance and strategic progress monthly to the Sector CEO, providing a transparent, data-driven account of {COMPANY}\'s commercial pipeline, operational performance, financial position, and risk outlook — with no surprises.',
+      ],
+      'Management': [
+        'Coordinate all functional activities of {COMPANY} to deliver the annual operating plan, ensuring commercial, operations, finance, and HR objectives are pursued in alignment and that cross-functional issues are resolved quickly and decisively.',
+        'Track and report P&L performance for {COMPANY} against the approved budget, identifying variances, escalating risks to sector leadership, and coordinating corrective actions across the management team.',
+        'Lead key commercial relationships and support the business development agenda, attending customer meetings, supporting tender preparations, and ensuring customer commitments are met on time and to specification.',
+        'Manage the {COMPANY} management team\'s performance, setting quarterly objectives, conducting regular one-to-ones, and creating an accountable, delivery-focused management culture.',
+        'Oversee operational execution at {COMPANY}, monitoring production, project, or service delivery performance against milestones and intervening to resolve bottlenecks before they become customer-impacting problems.',
+        'Manage working capital, CAPEX, and OPEX discipline at {COMPANY}, reviewing cost performance monthly, enforcing procurement and approval authority policies, and escalating material variances to the Finance Manager.',
+        'Ensure {COMPANY} meets all regulatory, licensing, and compliance requirements in the operating geography, coordinating with Legal, Finance, and HR to maintain all necessary permits and certifications.',
+        'Champion HSE at {COMPANY}, conducting regular site walks, chairing HSE committee meetings, and ensuring all managers apply the Group\'s zero-harm standards consistently.',
+        'Support workforce planning, hiring, and performance management at {COMPANY}, working with HR to fill critical vacancies quickly and ensure underperformance is addressed through structured processes.',
+        'Prepare and present the monthly management pack to sector leadership, covering commercial pipeline, operational KPIs, financial performance, headcount, HSE, and risk — ensuring senior management always has an accurate and current picture of the business.',
+      ],
+    },
+
+    // ── BU-SPECIFIC ACCOUNTABILITY OVERRIDES ───────────────────────────
+    // These are injected by buAccOverrides() based on sector/company
+    // to replace the first 3 generic accountabilities with BU-specific ones
+
+    internal: ['Sector CEO / Group CEO (direct reporting line)','All functional heads (Finance, Operations, HR, Commercial, Technical, Quality, HSE)','Group Corporate Functions (Finance, HR, IT, Legal, Procurement, Internal Audit)','Group Executive Committee','Elsewedy Electric Group Board (for Senior Positions)'],
+    external: ['{CUSTOMERS} — tier-1 strategic accounts, national utilities, and government clients','Host-country government ministries, regulatory authorities, and investment promotion bodies','National and international banks (credit facilities, trade finance, project finance)','External auditors, legal advisors, and tax consultants','Industry associations, standards bodies, and strategic alliance partners'],
+    reqs: {
+      'Senior Positions':    {y:'18–22 years of progressive business leadership, including at least 5 years as CEO, Country President, or Business Unit President with full P&L accountability for a comparable industrial, manufacturing, or infrastructure business; proven track record of delivering double-digit revenue growth and margin improvement in competitive markets',a:"Bachelor's in Engineering or Business; MBA from a leading international institution is strongly preferred",c:'Board governance certification (e.g. IFC Board Leadership Programme or equivalent); relevant sector-specific technical or commercial accreditation',comp:'Oracle ERP, Power BI (advanced), MS Office 365'},
+      'Senior Management':   {y:'15–18 years in business leadership across commercial, operational, and financial functions, including at least 5 years as General Manager, Country Manager, or Business Unit Head with full P&L accountability; demonstrated ability to grow a business in a competitive market and build a high-performance management team',a:"Bachelor's in Engineering or Business; MBA or MSc strongly preferred",c:'Leadership development programme (IMD, INSEAD, Harvard Executive Education, or equivalent); relevant sector accreditation',comp:'Oracle ERP, Power BI, MS Office 365'},
+      'Management':          {y:'12–15 years in cross-functional management, including at least 3 years in a General Manager, Country Director, or equivalent leadership role with broad P&L and operational responsibility',a:"Bachelor's in Engineering, Business, or a relevant discipline; Master's preferred",c:'',comp:'Oracle ERP, MS Office 365'},
+    }
+  },
+
+
+  // ── GENERAL MANAGER (legacy fallback for unmatched cases) ─────────
+
   'general manager': {
     purpose: {
       'Senior Positions':   'To lead {COMPANY} as the single accountable executive in order to define and execute the business strategy, build a high-performance organisation, and deliver sustainable shareholder value by growing the company\'s position in {MARKET}.',
@@ -6243,6 +6313,205 @@ const AREA_KB = {
 // ══════════════════════════════════════════════════════════════════════
 
 
+
+// ══════════════════════════════════════════════════════════════════════
+//  BU-SPECIFIC ACCOUNTABILITY OVERRIDES FOR TOP MANAGEMENT
+//  Returns an array of 3 BU-specific opening accountabilities that
+//  replace the generic top-3 in the top management entry.
+//  Called during assembleDraft when role is top management level.
+// ══════════════════════════════════════════════════════════════════════
+function getBUAccOverrides(scopeLabel, buKey, sectorKey, band){
+  // Normalise keys
+  var bu = (buKey||'').toLowerCase().trim();
+  var sec = (sectorKey||'').toLowerCase().trim();
+  var bk = band||'Senior Management';
+
+  // ── CABLES & WIRES BUs ─────────────────────────────────────────────
+  if(bu.includes('egytech')||bu.includes('01.1')){
+    if(bk==='Senior Positions') return [
+      'Define and govern EGYTECH\'s multi-year export strategy, identifying the highest-priority utility markets across Sub-Saharan Africa, North Africa, the Levant, and Europe — securing IEC, KEMA, BASEC, VDE, and SGS certifications for each target market and building an approved-vendor position with national utilities that creates recurring framework supply revenue.',
+      'Hold single-point P&L accountability for EGYTECH\'s full cable portfolio — HV, MV, LV, control, and instrumentation — governing export volume, revenue, gross margin, EBITDA, and ROCE against Group-approved targets, and personally sponsoring the manufacturing capacity expansion and OEE improvement programs required to sustain export competitiveness.',
+      'Build and lead EGYTECH\'s executive team across Commercial, Operations, Technical, Supply Chain, Finance, and HR — holding each functional head accountable for their contribution to EGYTECH\'s export growth, manufacturing excellence, and product certification agenda.',
+    ];
+    return [
+      'Lead EGYTECH\'s commercial execution, governing export order intake, key utility account relationships, and competitive tender strategy across all active export markets — personally attending final price negotiations on major framework agreements and utility tender awards.',
+      'Own EGYTECH\'s full P&L, presenting monthly variance analysis to the Sector CEO with transparent recovery actions for any shortfall in export volume, cable yield, or manufacturing cost performance.',
+      'Drive manufacturing excellence across EGYTECH\'s HV, MV, and LV cable production lines, holding the Operations Director accountable for OEE, first-pass yield, scrap reduction, and on-time delivery to export customers — and personally championing the lean and TPM transformation agenda.',
+    ];
+  }
+
+  if(bu.includes('esc')||bu.includes('01.2')){
+    return [
+      'Lead ESC\'s commercial agenda for special cables — petroleum, instrumentation, fire-resistant, and telecom — governing key account relationships with oil and gas operators, EPCs, and industrial customers and ensuring the tender pipeline consistently covers annual revenue targets.',
+      'Own ESC\'s P&L, overseeing cable production yield, material cost, and delivery performance for the special cable portfolio, and holding operations accountable for the quality certifications and approvals that protect ESC\'s position as the preferred specialist cable supplier.',
+      'Build ESC\'s product development and certification roadmap, working with the Technical Office to expand the range of petroleum-sector, offshore, and fire-resistant cable certifications that differentiate ESC from commodity cable competitors.',
+    ];
+  }
+
+  if(bu.includes('polymers')||bu.includes('egyplast')||bu.includes('01.7')){
+    return [
+      'Define and execute Egyplast\'s commercial strategy, balancing the internal supply obligation to Elsewedy cable factories with the growth of external and export sales of PVC compounds, XLPE formulations, and masterbatch to third-party cable manufacturers across Africa and the Middle East.',
+      'Own Egyplast\'s P&L, holding Operations and R&D accountable for compound yield, specific energy consumption, COA compliance, and on-time delivery — ensuring Egyplast\'s cost structure remains competitive against regional petrochemical compound suppliers.',
+      'Lead Egyplast\'s product innovation agenda, directing the R&D team to develop LSZH, flame-retardant, UV-stabilised, and specialty polymer formulations that capture premium market segments and reduce Egyplast\'s dependence on commodity compound revenues.',
+    ];
+  }
+
+  // ── TRANSFORMERS BUs ───────────────────────────────────────────────
+  if(bu.includes('trsf egypt')||bu.includes('02.1')||bu.includes('transformers egypt')){
+    if(bk==='Senior Positions') return [
+      'Define and execute the multi-year strategy for the TRSF EGYPT transformer cluster, covering Power, Distribution, Dry-Type, Busway, and Motion business units — identifying capacity expansion priorities, export market entry opportunities, and new product development (amorphous core, cast resin, compact substations) that grow the cluster into the regional transformer manufacturing leader.',
+      'Hold single-point P&L accountability for all five TRSF EGYPT business units, governing order intake, revenue, gross margin, factory utilisation, on-time delivery, and EBITDA against Group-approved targets — and personally sponsoring the OEE, IEC 60076 quality, and type-testing programs that protect TRSF EGYPT\'s approved-vendor status with SCDC, NCEDC, and export utility clients.',
+      'Build and lead the TRSF EGYPT executive team — Business Unit Directors, Operations Directors, Technical Office Director, Commercial Director, and functional heads — creating an organisation capable of simultaneously managing over 1,000 active transformer orders across multiple product families and 20+ export markets.',
+    ];
+    return [
+      'Lead TRSF EGYPT\'s commercial agenda — governing relationships with SCDC, NCEDC, and the Ministry of Electricity for the domestic market while directing the international sales strategy for power, distribution, and dry-type transformers across GCC, African, and European export markets.',
+      'Own TRSF EGYPT\'s full P&L, holding operations accountable for winding yield, active parts quality, tank fabrication efficiency, and factory acceptance test pass rates — and personally sponsoring the IEC 60076 type-testing and third-party witness programs (KEMA, CESI, CPRI) that protect approved-vendor status.',
+      'Drive the Technical Office agenda for TRSF EGYPT, overseeing active parts design, mechanical design, and R&D to continuously improve transformer efficiency, reduce material consumption, and expand the certified product range in response to evolving IEC and client specification requirements.',
+    ];
+  }
+
+  if(bu.includes('trsf indonesia')||bu.includes('02.2')){
+    return [
+      'Lead TRSF Indonesia\'s commercial development, building relationships with PLN (national electricity utility), EPC contractors, and industrial customers — and governing the local product certification and approval process required to compete in Indonesian distribution transformer tenders.',
+      'Own TRSF Indonesia\'s P&L, overseeing local manufacturing operations for distribution transformers, managing the balance between locally-sourced and imported raw materials, and holding operations accountable for IEC-compliant quality and competitive delivery performance.',
+      'Navigate TRSF Indonesia\'s regulatory and compliance environment, managing relationships with the Ministry of Energy and Mineral Resources, local content authority (TKDN), and Indonesian standards body (SNI) — ensuring all products meet local certification requirements for government procurement eligibility.',
+    ];
+  }
+
+  // ── SMART METERS ───────────────────────────────────────────────────
+  if(bu.includes('ie egypt')||bu.includes('03.2')||bu.includes('iskraemeco egypt')||bu.includes('smart meter')){
+    if(bk==='Senior Positions') return [
+      'Lead IE EGYPT\'s strategic positioning as the dominant smart metering and AMI solution provider in Egypt, directing the commercial strategy for the national smart meter rollout program with SCDC and NCEDC, and building the African market expansion strategy targeting DISCOs across Nigeria, Kenya, Tanzania, Ethiopia, and Senegal.',
+      'Own IE EGYPT\'s full P&L — covering smart meter hardware, data concentrators, AMI system integration, and Symbiot MDM software licences — and govern the partnership with IE Slovenia to ensure IE EGYPT has preferential access to the Iskraemeco product roadmap, competitive transfer pricing, and ongoing technology transfer.',
+      'Build IE EGYPT\'s software and AMI engineering capability, developing a local engineering team capable of independently designing, deploying, and supporting end-to-end AMI systems — including DLMS/COSEM communication, IEC 62056 compliance, and Symbiot MDM customisation for Egyptian grid-code requirements.',
+    ];
+    return [
+      'Lead IE EGYPT\'s commercial engagement with SCDC and NCEDC, personally managing the relationships with utility procurement directors and Ministry of Electricity officials to position IE EGYPT for the major smart meter rollout tender waves — and building the technical qualification packages and local support capability required to win.',
+      'Own IE EGYPT\'s P&L, overseeing meter assembly operations, AMI deployment project delivery, and Symbiot MDM licence revenue — and governing the commercial and technical partnership with IE Slovenia to ensure competitive product transfer pricing and access to the full Iskraemeco AMI product suite.',
+      'Drive IE EGYPT\'s African expansion, identifying and prioritising DISCOM smart metering programs across Sub-Saharan Africa, building a regional partner and representative network, and personally sponsoring the IEC 62052/62053 certification and OIML/SASO approvals required for export market entry.',
+    ];
+  }
+
+  // ── EPC BUs ────────────────────────────────────────────────────────
+  if(bu.includes('psp')||bu.includes('04.1')||bu.includes('power station')){
+    if(bk==='Senior Positions') return [
+      'Define PSP\'s strategic positioning as the EMEA region\'s leading EPC contractor for power generation — determining which technologies (CCGT, solar PV, hydro, wind, water treatment), geographies (MENA, Sub-Saharan Africa, Europe), and contract structures (EPC lump sum, BOO, PPP) to pursue, and building the engineering, procurement, and commercial capabilities required to win and deliver at scale.',
+      'Govern PSP\'s full portfolio P&L, holding personal accountability for order intake, revenue recognition (IFRS 15 POC), gross margin, cashflow, and EBITDA across a multi-country, multi-billion-dollar simultaneous project portfolio — presenting project-by-project performance to the Group VP quarterly with zero tolerance for unexplained margin erosion.',
+      'Lead PSP\'s bid and commercial strategy, personally sponsoring all tenders above USD 200M, reviewing technical and commercial risk assessments, approving go/no-go decisions, and leading final negotiations with government energy ministers, national utility CEOs, and development finance institution project teams.',
+    ];
+    return [
+      'Lead PSP\'s bid and commercial execution, personally sponsoring major power generation EPC tenders across MENA and Africa — reviewing risk registers, approving commercial terms, and leading final contract negotiations with government clients, utility CEOs, and DFI project teams.',
+      'Own PSP\'s portfolio P&L, governing schedule SPI, cost CPI, and margin conversion across all active CCGT, solar PV, hydro, and water treatment projects — escalating systemic delivery risks to the Group VP with clear recovery plans and no surprises.',
+      'Direct PSP\'s project delivery machine, holding the Engineering Director, Supply Chain Director, and Construction Directors accountable for design quality, equipment delivery, site execution, commissioning excellence, and client handover — and personally resolving contractual and technical escalations that threaten project milestones.',
+    ];
+  }
+
+  if(bu.includes('t&d')||bu.includes('04.2')||bu.includes('transmission')||bu.includes('t d ')){
+    if(bk==='Senior Positions') return [
+      'Define T&D\'s strategic growth agenda, identifying the highest-value market opportunities across HV substations (GIS/AIS up to 500 kV), overhead transmission lines (up to 400 kV), underground HV cable installation, and utility-scale solar PV — building the engineering, procurement, and project controls capabilities required to win and deliver in 17+ simultaneous operating countries.',
+      'Govern T&D\'s full portfolio P&L, holding personal accountability for order intake, revenue recognition (IFRS 15 POC), gross margin, retentions management, and cashflow across all active EPC projects — personally sponsoring all tenders above USD 50M and presenting portfolio performance to the Group VP monthly with project-level transparency.',
+      'Build T&D\'s engineering and delivery machine, holding the Engineering Director accountable for IEC-compliant primary/secondary design, OHTL engineering, PV design, and civil engineering quality, and holding Project Directors accountable for schedule, cost, and commissioning performance on each project — intervening decisively when portfolio-level risks emerge.',
+    ];
+    return [
+      'Lead T&D\'s commercial and bid strategy, personally approving all major HV substation, OHTL, and solar PV tenders — reviewing technical and commercial risk, approving go/no-go decisions, and leading final contract negotiations with national transmission utilities, government ministries, and IFI-funded project owners across MENA and Africa.',
+      'Own T&D\'s portfolio P&L, presenting monthly project-by-project performance to the Group VP with full transparency on schedule SPI, cost CPI, margin erosion risk, and recovery plans — and holding Project Directors personally accountable for earned value performance on every active project.',
+      'Direct T&D\'s Engineering function across Primary Design, Secondary/Protection, OHTL, Civil, PV, and MEP disciplines, ensuring all IFC deliverables meet IEC/IEEE standards, vendor submittals are reviewed rigorously, and FAT programs are completed before equipment is shipped to site.',
+    ];
+  }
+
+  if(bu.includes('infrastructure')||bu.includes('04.4')||bu.includes('rowad')){
+    return [
+      'Lead the Infrastructure business commercial agenda, governing EPC project bids and contract negotiations for civil infrastructure, utilities, and industrial facility construction — personally sponsoring all tenders above the approved threshold and ensuring the bid pipeline covers the three-year revenue target.',
+      'Own the Infrastructure P&L, monitoring project-by-project earned value performance, holding Project Directors accountable for schedule and cost, and escalating systemic delivery risks to sector leadership with clear corrective action plans.',
+      'Direct the Engineering and Construction functions, ensuring all civil and MEP designs meet applicable codes, all subcontractors are properly qualified and managed back-to-back, and all projects are commissioned and handed over with zero critical defects.',
+    ];
+  }
+
+  // ── DEVELOPMENT & CMC ──────────────────────────────────────────────
+  if(bu.includes('development')||bu.includes('05.1')||bu.includes('cmc')||bu.includes('industrial real estate')){
+    if(bk==='Senior Positions') return [
+      'Define and execute the Development & CMC Sector growth strategy, identifying the highest-value industrial park expansion, built-to-suit facility, dry port, and CMC fee-income opportunities across Egypt and targeted African markets — and building the land bank, investor relations capability, and community management platform required to grow the Sector into a self-sustaining, high-yield real estate and services business.',
+      'Govern the Sector\'s full P&L and asset portfolio, holding accountability for land sales revenue, built-to-suit lease income, CMC contract margins, and facility management EBITDA across all operational industrial parks — presenting monthly performance to the Group CEO with full transparency on investor pipeline, tenant occupancy, and infrastructure delivery.',
+      'Lead the Sector\'s investor acquisition strategy, personally sponsoring relationships with tier-1 industrial investors across automotive, food processing, pharmaceuticals, logistics, and FMCG sectors — and building executive relationships with GAFI, SCZONE, and industrial zone authorities that position the Sector\'s parks as the destination of choice for Egyptian and foreign direct investment.',
+    ];
+    return [
+      'Lead the Sector\'s commercial and investor acquisition agenda, managing relationships with GAFI, industrial zone authorities, and prospective industrial investors — governing the land sales pipeline, built-to-suit lease negotiation process, and CMC contract development to deliver the annual revenue and EBITDA targets.',
+      'Own the Sector\'s full P&L, overseeing infrastructure delivery schedules, tenant occupancy performance, and CMC project margins — and holding the Development Director, Projects Director, and Community Management team accountable for their contribution to the Sector\'s financial and operational performance.',
+      'Champion the Sector\'s sustainability and ESG agenda, embedding green building standards, renewable energy, and smart utility systems into new park development — differentiating the Sector\'s proposition for ESG-conscious international investors and government-sponsored industrial programs.',
+    ];
+  }
+
+  // ── DIGITAL ────────────────────────────────────────────────────────
+  if(bu.includes('digital')||bu.includes('06.1')||bu.includes('06.2')){
+    if(bk==='Senior Positions') return [
+      'Define the Digital Sector\'s go-to-market strategy, identifying the highest-value enterprise and government segments for cloud infrastructure, cybersecurity, ERP/HRMS, IoT, and data center services — and differentiating the Sector\'s proposition through Elsewedy Electric\'s industrial IoT expertise and manufacturing domain knowledge.',
+      'Govern the Digital Sector\'s full P&L across cloud services, cybersecurity, ERP/HRMS implementations, IoT platforms, data center colocation, and telecom infrastructure — personally sponsoring the Sector\'s largest enterprise accounts and government programs, and holding delivery and managed services teams accountable for SLA performance and customer retention.',
+      'Lead the Sector\'s role as Elsewedy Group\'s internal digital transformation enabler, deploying Industry 4.0 programs across cable, transformer, and EPC manufacturing entities — and commercialising proven internal use cases externally to Egyptian enterprises and government clients as validated reference implementations.',
+    ];
+    return [
+      'Lead the Digital Sector\'s commercial execution, managing the largest enterprise accounts and government programs personally, governing the presales and delivery pipeline, and ensuring the Sector wins the most strategically important technology transformation contracts in the Egyptian and regional market.',
+      'Own the Digital Sector\'s P&L, holding delivery teams accountable for project margin, SLA compliance on managed services contracts, and customer retention rates — and presenting monthly performance to the Group CEO with full transparency on revenue recognition, pipeline conversion, and profitability by service line.',
+      'Drive the Sector\'s technical capability and partnership agenda, governing relationships with AWS, Microsoft, Oracle, Cisco, and Fortinet at the partner tier level — and continuously building the Sector\'s certified technical talent depth in cloud architecture, cybersecurity, ERP implementation, and IoT engineering.',
+    ];
+  }
+
+  // ── EDUCATION (STA) ────────────────────────────────────────────────
+  if(bu.includes('sta')||bu.includes('07.1')||bu.includes('education')||bu.includes('technical school')){
+    return [
+      'Define and execute STA\'s strategic growth plan, expanding student enrollment, diversifying programme offerings across electrical, mechanical, ICT, and industrial trades, and establishing new STA campuses aligned to Elsewedy Electric manufacturing clusters — with the ambition of building Egypt\'s most recognised TVET brand within five years.',
+      'Govern STA\'s academic quality and NAQAAE accreditation, ensuring all programmes meet Ministry of Education standards, faculty qualifications are maintained at industry-leading levels, and graduate employment outcomes are tracked, published, and consistently exceed national TVET benchmarks.',
+      'Build STA\'s financial sustainability, growing fee income from corporate training, apprenticeship programs, and third-party vocational testing to progressively reduce dependence on Group subsidy — and building international education partnerships with European TVET systems and awarding bodies that enhance STA diploma market value.',
+    ];
+  }
+
+  // ── HEAVY MACHINERY ────────────────────────────────────────────────
+  if(bu.includes('machinery')||bu.includes('04.11')||bu.includes('caterpillar')||bu.includes('mantrack')){
+    return [
+      'Lead Elsewedy Machinery\'s commercial strategy across all equipment brands — CAT, Sany, Hyundai, and BMS — governing the balance between new equipment sales, OEM-certified aftersales service, spare parts revenue, and equipment rental, and personally managing executive relationships with the OEM principals at annual dealer conferences and business reviews.',
+      'Own Elsewedy Machinery\'s full P&L, holding the Sales Director, Operations Director, and Aftersales Manager accountable for equipment revenue, service margin, parts income, and customer satisfaction scores — and intervening decisively when dealer KPIs signal risk to OEM principal relationships or equipment financing covenants.',
+      'Drive Elsewedy Machinery\'s aftersales and service capability, overseeing the field service engineer competency program, workshop repair capacity, critical spares stocking strategy, and warranty claim submission process — targeting first-time-fix rates and MTTR metrics that build customer loyalty and justify premium service pricing.',
+    ];
+  }
+
+  // ── ALGERIA / INTERNATIONAL SUBSIDIARIES ──────────────────────────
+  if(bu.includes('algeria')||bu.includes('10.1')){
+    return [
+      'Lead Cables Algeria\'s commercial agenda, winning and maintaining Sonelgaz approved-vendor status for LV, MV, and HV cables, competing in national tender programs, and building relationships with EPC contractors and industrial clients across Algeria\'s hydrocarbons, construction, and utilities sectors — navigating the complex Algerian procurement environment with deep knowledge of Ministry of Industry and Sonelgaz decision processes.',
+      'Own Cables Algeria\'s P&L, governing manufacturing output, cable yield, local sales revenue, and export performance — holding operations accountable for NA and IEC-compliant quality, on-time delivery to Sonelgaz and industrial clients, and the local integration nationale commitments that protect Cables Algeria\'s eligibility for government procurement.',
+      'Navigate Cables Algeria\'s regulatory and operating environment, managing relationships with the Ministry of Industry and Mines, Customs Authority, and local investment authority — ensuring compliance with Algerian foreign exchange controls, import regulations, and local content requirements while coordinating with Group Finance on dinar/EUR/USD exposure and dividend repatriation.',
+    ];
+  }
+
+  // ── SECTOR CEO LEVEL (scope = sector) ─────────────────────────────
+  if(sec.includes('cables')||sec==='cables'||sec.includes('wires')){
+    return [
+      'Define and execute the Cables Sector three-to-five year strategic agenda, identifying the highest-value capacity expansion, export market entry, and product line extension opportunities across HV, MV, LV, special, and telecom cables — and securing Group Board investment approval within governance timelines.',
+      'Govern the Cables Sector\'s consolidated P&L, holding each BU CEO accountable for their revenue, margin, and EBITDA contribution against the sector plan — and personally sponsoring the largest export framework agreements and utility approved-vendor programs that determine the sector\'s long-term revenue base.',
+      'Build the Cables Sector\'s technical and commercial competitive advantage, overseeing the group-wide product certification agenda (IEC, KEMA, BASEC, VDE, UL), the shared technical excellence and process improvement programs, and the Group Procurement strategy for copper rod, XLPE compound, and PVC that drives sector-wide cost competitiveness.',
+    ];
+  }
+
+  if(sec.includes('enc')||sec.includes('epc')||sec.includes('engineering')||sec.includes('construction')){
+    return [
+      'Define the EPC Sector\'s strategic growth agenda, determining the highest-value project types (power generation, T&D, civil infrastructure, solar PV, water), geographies (MENA, Africa, Europe), and contract structures — and building the shared engineering, procurement, and project controls capabilities that give Elsewedy Electric a distinctive competitive position in international EPC tendering.',
+      'Govern the EPC Sector\'s consolidated P&L across PSP, T&D, Infrastructure, and other EPC entities, holding each CEO accountable for order intake, revenue recognition, margin, and cash — and personally sponsoring all bids above the Sector threshold, intervening on major project escalations, and chairing the monthly portfolio review with zero tolerance for unexplained underperformance.',
+      'Build the EPC Sector\'s engineering excellence, supply chain depth, and financial capacity — overseeing the quality of technical delivery across all major projects, the Group\'s performance bond facility and banking relationships, and the talent pipeline of Project Directors, Engineering Directors, and commercial leaders required to scale the Sector\'s execution capability.',
+    ];
+  }
+
+  if(sec.includes('elecprod')||sec.includes('electrical products')||sec.includes('transformers')){
+    return [
+      'Define the Electrical Products Sector strategy, governing the product portfolio across power transformers, distribution transformers, dry-type transformers, busway, motors, and eMobility — identifying export market entry opportunities, new product development priorities, and capacity investment requirements that grow the Sector into a global top-10 electrical products manufacturer.',
+      'Govern the Electrical Products Sector consolidated P&L, holding each BU President accountable for order intake, factory utilisation, type-test pass rates, on-time delivery, and EBITDA — and personally leading the sector\'s commercial agenda with major utility customers, EPC contractors, and government buyers in SCDC, NCEDC, and export markets.',
+      'Champion the Sector\'s technical excellence and certification agenda, overseeing IEC 60076 type-testing programs, third-party witness testing (KEMA, CESI, CPRI, TÜV), and R&D investment in next-generation transformer and switchgear technologies that position the Sector\'s products on global approved-vendor lists.',
+    ];
+  }
+
+  // ── GROUP LEVEL FALLBACK ───────────────────────────────────────────
+  return null;  // null = use generic top management accs
+}
+
+
 function _isSupportingRole(dept, funcKey){
   var kw=['human resource','hr ','finance','accounting','legal','administration','information technology','it infra','talent','payroll','personnel','learning','facility'];
   var t=((dept||'')+(funcKey||'')).toLowerCase();
@@ -6326,6 +6595,16 @@ function assembleDraft(){
   const accsBuilt = accPool.slice(0, 10).map((tpl, idx) => {
     return fillTokensV2(tpl.replace('{V}', pickVerb(band, idx)), c, sector, sctx, bkey);
   });
+
+  // ── BU-SPECIFIC TOP MANAGEMENT OVERRIDES ──────────────────────────
+  if(resolvedKey === 'top management' && typeof getBUAccOverrides === 'function'){
+    var _buOvr = getBUAccOverrides(c.scopeLabel, c.co, c.sector, bkey);
+    if(_buOvr && _buOvr.length > 0){
+      for(var _oi=0; _oi<_buOvr.length && _oi<accsBuilt.length; _oi++){
+        accsBuilt[_oi] = fillTokensV2(_buOvr[_oi], c, sector, sctx, bkey);
+      }
+    }
+  }
 
   // ── ROLE CONTEXT CARD APPLICATION ──────────────────────────────────
   var _ctx = c.ctx || {};
@@ -6835,7 +7114,7 @@ function areaToKBKey(area){
   const a=area.toLowerCase().trim();
 
   // ── Senior position title routing ─────────────────────────────────
-  if(a.includes('general manager')||a.includes('managing director')||a.includes('managing partner')||a==='ceo'||a.includes('chief executive')||a.includes('sector ceo')||a.includes(' ceo')||a.startsWith('ceo')||a.includes('chief operations and strategy')) return 'general manager';
+  if(a.includes('general manager')||a.includes('managing director')||a.includes('managing partner')||a==='ceo'||a.includes('chief executive')||a.includes('sector ceo')||a.includes(' ceo')||a.startsWith('ceo')||a.includes('chief operations and strategy')) return 'top management';
   if(a.includes('chief financial officer')||a.includes('finance director')||a.includes('group cfo')||a.includes(' cfo')||a.startsWith('cfo')) return 'chief financial officer';
   if(a.includes('operations director')||a.includes('chief operations')||a.includes(' coo')||a.includes('operations general manager')||a.includes('operations senior manager')||a.includes('operations regional')) return 'operations director';
   if(a.includes('sales director')||a.includes('commercial director')||a.includes('sales general manager')||a.includes('regional sales director')||a.includes('chief commercial')) return 'sales director';
@@ -6950,17 +7229,91 @@ function checkRL(){
   const ban=document.getElementById('rlBan'),rel=document.getElementById('rlRel');
   const sm=document.getElementById('rlStat'),rm=document.getElementById('rlMsg');
   if(!tv||!rv){rel.value='';ban.classList.remove('on');return null;}
-  const myB=tv.split('|')[1];
-  const rvParts=rv.split('|');
-  const rtB=rvParts[1]||rvParts[0];
-  const myR=bR2(myB),rtR=bR2(rtB),diff=myR-rtR;
-  if(rtR>=myR){
-    document.getElementById('rlTxt').textContent=`"${rvParts[0]}" is in the ${rtB} band — same or lower than ${myB}. Reports-to must be at least one band higher.`;
-    ban.classList.add('on');rel.value='❌ Invalid';rel.classList.add('err');
-    sm.className='vmsg err';sm.textContent='Band-to-band rule violated.';rm.className='vmsg err';rm.textContent='Select higher band.';return false;
+
+  // Parse title value: "Title|Band|Grade" (grade may be absent in some options)
+  const myParts=tv.split('|'),   myTitle=myParts[0], myB=myParts[1], myG=myParts[2]||'';
+  const rvParts=rv.split('|'),   rvTitle=rvParts[0], rtB=rvParts[1]||rvParts[0], rtG=rvParts[2]||'';
+
+  // Full grade order — each step is one grade up
+  const GRADE_ORDER=['L1','L2','L3','D1','D2','D3','M1','M2','M3','S1','S2','P1','P2','P3','T1','T2','T3','T4','A1','A2','A3','A4'];
+  const gRank=g=>GRADE_ORDER.indexOf(g);  // lower index = more senior
+
+  // Bands where grade-to-grade rule applies (not band-to-band)
+  const GRADE_TO_GRADE_BANDS=['Senior Positions','Senior Management'];
+
+  function setValid(msg){
+    ban.classList.remove('on');
+    rel.value=msg; rel.className='ok';
+    sm.className='vmsg ok'; sm.textContent='Valid.';
+    rm.className='vmsg'; rm.textContent='';
+    return true;
   }
-  ban.classList.remove('on');rel.value=`✓ ${rtB} is ${diff} band${diff>1?'s':''} above ${myB}`;
-  rel.className='ok';sm.className='vmsg ok';sm.textContent='Valid.';rm.className='vmsg';return true;
+  function setInvalid(bannerMsg, relMsg, statusMsg, fieldMsg){
+    document.getElementById('rlTxt').textContent=bannerMsg;
+    ban.classList.add('on');
+    rel.value=relMsg; rel.classList.add('err');
+    sm.className='vmsg err'; sm.textContent=statusMsg;
+    rm.className='vmsg err'; rm.textContent=fieldMsg;
+    return false;
+  }
+
+  // ── GRADE-TO-GRADE RULE (Senior Positions + Senior Management) ───────
+  // Within L1/L2/L3/D1/D2/D3: reports-to must be exactly one grade above.
+  // Allowed cross-band transitions:
+  //   D1 may report to L3 (crossing from Senior Management into Senior Positions)
+  //   L3 may report to L2, L2 may report to L1
+  if(GRADE_TO_GRADE_BANDS.includes(myB)){
+    if(!myG){
+      // No grade encoded — fall back to band check
+      const myR=bR2(myB),rtR=bR2(rtB);
+      if(rtR>=myR) return setInvalid(
+        '"'+rvTitle+'" is in the '+rtB+' band — same or lower than '+myB+'. Reports-to must be at least one band higher.',
+        '❌ Invalid','Band rule violated.','Select higher band.'
+      );
+      return setValid('✓ '+rtB+' is above '+myB);
+    }
+    const myRank=gRank(myG), rtRank=gRank(rtG||'');
+
+    // rtG must be exactly one grade above myG (i.e. rtRank === myRank - 1)
+    if(!rtG){
+      return setInvalid(
+        '"'+rvTitle+'" — no grade selected. For '+myB+' roles, select a specific grade in the Reports-to field.',
+        '❌ Grade required','Select a specific grade.','Select a graded title.'
+      );
+    }
+    if(rtRank < 0){
+      // Reports-to grade not in the grade table — band check fallback
+      const myR=bR2(myB),rtR=bR2(rtB);
+      if(rtR>=myR) return setInvalid(
+        '"'+rvTitle+'" must be at least one band above '+myB+'.','❌ Invalid','Band rule violated.','Select higher band.'
+      );
+      return setValid('✓ '+rtB+' is above '+myB);
+    }
+    if(rtRank === myRank - 1){
+      // Exactly one grade above — valid
+      return setValid('✓ '+rvTitle+' ('+rtG+') is one grade above '+myTitle+' ('+myG+')');
+    }
+    if(rtRank < myRank - 1){
+      // More than one grade above — also valid (skip is allowed upward)
+      const diff=myRank-rtRank;
+      return setValid('✓ '+rvTitle+' ('+rtG+') is '+diff+' grades above '+myTitle+' ('+myG+')');
+    }
+    // rtRank >= myRank means same or lower grade — invalid
+    return setInvalid(
+      '"'+rvTitle+'" ('+rtG+') is the same grade or lower than "'+myTitle+'" ('+myG+'). For '+myB+' roles, Reports-to must be at least one grade above.',
+      '❌ Invalid — grade-to-grade rule','Grade-to-grade rule violated.','Select a grade above '+myG+'.'
+    );
+  }
+
+  // ── BAND-TO-BAND RULE (Management and below) ─────────────────────────
+  const myR=bR2(myB), rtR=bR2(rtB), diff=myR-rtR;
+  if(rtR>=myR){
+    return setInvalid(
+      '"'+rvTitle+'" is in the '+rtB+' band — same or lower than '+myB+'. Reports-to must be at least one band higher.',
+      '❌ Invalid','Band-to-band rule violated.','Select higher band.'
+    );
+  }
+  return setValid('✓ '+rtB+' is '+diff+' band'+(diff>1?'s':'')+' above '+myB);
 }
 function s1Next(){
   const t=document.getElementById('jobTitle').value,sc=document.getElementById('scope').value;
